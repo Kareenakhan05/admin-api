@@ -1,12 +1,19 @@
 import Admin from '../models/admin.js';
+import User from '../models/user.js';
 
 import { generate_token, hash_password, compare_password } from '../helpers/auth_helpers.js';
 import { send_response } from '../helpers/response_helper.js';
-import { sendOtp, verifyOtp } from '../services/otp_services.js';
+import { send_otp, verify_otp } from '../services/otp_services.js';
+import { validationResult } from 'express-validator';
 
 // Register Admin with OTP verification
 export async function register_admin(req, res) {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return send_response(res, 400, 'Validation error', errors.array());
+        }
+
         const { email, password, name, phone, role, otp } = req.body;
 
         const existing_admin = await Admin.findOne({ email });
@@ -15,8 +22,7 @@ export async function register_admin(req, res) {
         }
 
         // Verify OTP
-        const isOtpValid = verifyOtp(email, otp);
-        if (!isOtpValid) {
+        if (!verifyOtp(email, otp)) {
             return send_response(res, 400, 'Invalid or expired OTP');
         }
 
@@ -33,6 +39,11 @@ export async function register_admin(req, res) {
 // Admin Login
 export async function login_admin(req, res) {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return send_response(res, 400, 'Validation error', errors.array());
+        }
+
         const { email, password } = req.body;
 
         const admin = await Admin.findOne({ email });
@@ -40,8 +51,7 @@ export async function login_admin(req, res) {
             return send_response(res, 404, 'Admin not found');
         }
 
-        const is_match = await compare_password(password, admin.password);
-        if (!is_match) {
+        if (!(await compare_password(password, admin.password))) {
             return send_response(res, 401, 'Invalid credentials');
         }
 
@@ -55,14 +65,17 @@ export async function login_admin(req, res) {
 // Forgot Password
 export async function forgot_password(req, res) {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return send_response(res, 400, 'Validation error', errors.array());
+        }
+
         const { email } = req.body;
 
-        const admin = await Admin.findOne({ email });
-        if (!admin) {
+        if (!(await Admin.findOne({ email }))) {
             return send_response(res, 404, 'Admin not found');
         }
 
-        // Send OTP to email for password reset
         sendOtp(email);
 
         send_response(res, 200, 'OTP sent to email for password reset');
@@ -74,21 +87,24 @@ export async function forgot_password(req, res) {
 // Reset Password (Change Password)
 export async function reset_password(req, res) {
     try {
-        const { email, otp, newPassword } = req.body;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return send_response(res, 400, 'Validation error', errors.array());
+        }
 
-        const isOtpValid = verifyOtp(email, otp);
-        if (!isOtpValid) {
+        const { email, otp, new_password } = req.body;
+
+        if (!verifyOtp(email, otp)) {
             return send_response(res, 400, 'Invalid or expired OTP');
         }
 
-        // Hash new password and update it
-        const hashedPassword = await hash_password(newPassword);
+        const hashed_password = await hash_password(new_password);
         const admin = await Admin.findOne({ email });
         if (!admin) {
             return send_response(res, 404, 'Admin not found');
         }
 
-        admin.password = hashedPassword;
+        admin.password = hashed_password;
         await admin.save();
 
         send_response(res, 200, 'Password reset successfully');
@@ -100,9 +116,9 @@ export async function reset_password(req, res) {
 // Approve/Reject Recruiters
 export async function approve_recruiter(req, res) {
     try {
-        const { userId } = req.params;
+        const { user_id } = req.params;
 
-        const recruiter = await User.findById(userId);
+        const recruiter = await User.findById(user_id);
         if (!recruiter) {
             return send_response(res, 404, 'Recruiter not found');
         }
@@ -118,9 +134,9 @@ export async function approve_recruiter(req, res) {
 
 export async function reject_recruiter(req, res) {
     try {
-        const { userId } = req.params;
+        const { user_id } = req.params;
 
-        const recruiter = await User.findById(userId);
+        const recruiter = await User.findById(user_id);
         if (!recruiter) {
             return send_response(res, 404, 'Recruiter not found');
         }
@@ -137,9 +153,9 @@ export async function reject_recruiter(req, res) {
 // Delete User
 export async function delete_user(req, res) {
     try {
-        const { userId } = req.params;
+        const { user_id } = req.params;
 
-        const user = await User.findById(userId);
+        const user = await User.findById(user_id);
         if (!user) {
             return send_response(res, 404, 'User not found');
         }
