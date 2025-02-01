@@ -166,3 +166,22 @@ export async function delete_user(req, res) {
         send_response(res, 500, 'Server error', err.message);
     }
 }
+export async function get_dashboard_stats(req, res) {
+    try {
+        const total_users = await User.countDocuments();
+        const total_recruiters = await User.countDocuments({ role: 'recruiter' });
+        const pending_recruiters = await User.countDocuments({ role: 'recruiter', status: 'pending' });
+        const total_jobs = await Job.countDocuments();
+
+        const dashboard_data = {
+            total_users,
+            total_recruiters,
+            pending_recruiters,
+            total_jobs,
+        };
+
+        send_response(res, 200, 'Admin dashboard data', dashboard_data);
+    } catch (err) {
+        send_response(res, 500, 'Server error', err.message);
+    }
+}
