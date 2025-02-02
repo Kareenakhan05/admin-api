@@ -8,7 +8,8 @@ import {
     approve_recruiter,
     reject_recruiter,
     delete_user,
-    get_dashboard_stats // Importing the dashboard API
+    get_dashboard_stats, // Importing the dashboard API
+    get_job_dashboard_stats // Importing the job dashboard API
 } from '../controllers/admin_controller.js';
 import { validate_request } from '../middlewares/validate_request.js';
 
@@ -50,7 +51,10 @@ router.post('/reject-recruiter/:user_id', reject_recruiter);
 // Delete User
 router.delete('/delete-user/:user_id', delete_user);
 
-// Admin Dashboard - Fetch statistics
-router.get('/dashboard', get_dashboard_stats);  // New Dashboard API
+// Admin Dashboard - Fetch user and recruiter statistics
+router.get('/dashboard', get_dashboard_stats);  // Admin stats API
+
+// Job Portal Dashboard - Fetch job-related statistics
+router.get('/job-dashboard', get_job_dashboard_stats);  // New job portal dashboard stats API
 
 export default router;

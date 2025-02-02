@@ -1,5 +1,7 @@
 import Admin from '../models/admin.js';
 import User from '../models/user.js';
+import Job from '../models/job.js';  // Assuming Job is the model for job listings.
+import Application from '../models/application.js';  // Assuming Application is the model for job applications.
 
 import { generate_token, hash_password, compare_password } from '../helpers/auth_helpers.js';
 import { send_response } from '../helpers/response_helper.js';
@@ -166,6 +168,8 @@ export async function delete_user(req, res) {
         send_response(res, 500, 'Server error', err.message);
     }
 }
+
+// Get Dashboard Stats (User & Recruiter)
 export async function get_dashboard_stats(req, res) {
     try {
         const total_users = await User.countDocuments();
@@ -181,6 +185,27 @@ export async function get_dashboard_stats(req, res) {
         };
 
         send_response(res, 200, 'Admin dashboard data', dashboard_data);
+    } catch (err) {
+        send_response(res, 500, 'Server error', err.message);
+    }
+}
+
+// Get Job Portal Dashboard Stats
+export async function get_job_dashboard_stats(req, res) {
+    try {
+        const total_jobs = await Job.countDocuments();
+        const active_jobs = await Job.countDocuments({ status: 'active' });
+        const closed_jobs = await Job.countDocuments({ status: 'closed' });
+        const pending_applications = await Application.countDocuments({ status: 'pending' });
+
+        const job_dashboard_data = {
+            total_jobs,
+            active_jobs,
+            closed_jobs,
+            pending_applications,
+        };
+
+        send_response(res, 200, 'Job portal dashboard data', job_dashboard_data);
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
