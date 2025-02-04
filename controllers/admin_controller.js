@@ -1,15 +1,12 @@
-import Admin from '../models/admin.js';
-import User from '../models/user.js';
-import Job from '../models/job.js';  // Assuming Job is the model for job listings.
-import Application from '../models/application.js';  // Assuming Application is the model for job applications.
-
-import { generate_token, hash_password, compare_password } from '../helpers/auth_helpers.js';
-import { send_response } from '../helpers/response_helper.js';
-import { send_otp, verify_otp } from '../services/otp_services.js';
-import { validationResult } from 'express-validator';
+const Admin = require('../../models/admin.js');
+const User = require('../../models/user.js');  // Assuming you have a User model for recruiters and users
+const { generate_token, hash_password, compare_password } = require('../../helpers/authHelper.js');
+const { send_response } = require('../../helpers/responseHelper.js');
+const { sendOtp, verifyOtp } = require('../../services/otpService.js');
+const { validationResult } = require('express-validator');
 
 // Register Admin with OTP verification
-export async function register_admin(req, res) {
+const register_admin = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -36,10 +33,10 @@ export async function register_admin(req, res) {
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
-}
+};
 
 // Admin Login
-export async function login_admin(req, res) {
+const login_admin = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -62,10 +59,10 @@ export async function login_admin(req, res) {
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
-}
+};
 
 // Forgot Password
-export async function forgot_password(req, res) {
+const forgot_password = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -84,10 +81,10 @@ export async function forgot_password(req, res) {
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
-}
+};
 
 // Reset Password (Change Password)
-export async function reset_password(req, res) {
+const reset_password = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -113,10 +110,10 @@ export async function reset_password(req, res) {
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
-}
+};
 
-// Approve/Reject Recruiters
-export async function approve_recruiter(req, res) {
+// Approve Recruiter
+const approve_recruiter = async (req, res) => {
     try {
         const { user_id } = req.params;
 
@@ -125,16 +122,17 @@ export async function approve_recruiter(req, res) {
             return send_response(res, 404, 'Recruiter not found');
         }
 
-        recruiter.status = 'approved';
+        recruiter.status = 'approved'; // Assuming status is the field that indicates approval
         await recruiter.save();
 
         send_response(res, 200, 'Recruiter approved successfully');
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
-}
+};
 
-export async function reject_recruiter(req, res) {
+// Reject Recruiter
+const reject_recruiter = async (req, res) => {
     try {
         const { user_id } = req.params;
 
@@ -143,70 +141,38 @@ export async function reject_recruiter(req, res) {
             return send_response(res, 404, 'Recruiter not found');
         }
 
-        recruiter.status = 'rejected';
+        recruiter.status = 'rejected'; // Assuming status is the field that indicates rejection
         await recruiter.save();
 
         send_response(res, 200, 'Recruiter rejected successfully');
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
-}
+};
 
 // Delete User
-export async function delete_user(req, res) {
+const delete_user = async (req, res) => {
     try {
         const { user_id } = req.params;
 
-        const user = await User.findById(user_id);
+        const user = await User.findByIdAndDelete(user_id);
         if (!user) {
             return send_response(res, 404, 'User not found');
         }
 
-        await user.remove();
         send_response(res, 200, 'User deleted successfully');
     } catch (err) {
         send_response(res, 500, 'Server error', err.message);
     }
-}
+};
 
-// Get Dashboard Stats (User & Recruiter)
-export async function get_dashboard_stats(req, res) {
-    try {
-        const total_users = await User.countDocuments();
-        const total_recruiters = await User.countDocuments({ role: 'recruiter' });
-        const pending_recruiters = await User.countDocuments({ role: 'recruiter', status: 'pending' });
-        const total_jobs = await Job.countDocuments();
-
-        const dashboard_data = {
-            total_users,
-            total_recruiters,
-            pending_recruiters,
-            total_jobs,
-        };
-
-        send_response(res, 200, 'Admin dashboard data', dashboard_data);
-    } catch (err) {
-        send_response(res, 500, 'Server error', err.message);
-    }
-}
-
-// Get Job Portal Dashboard Stats
-export async function get_job_dashboard_stats(req, res) {
-    try {
-        const total_jobs = await Job.countDocuments();
-        const active_jobs = await Job.countDocuments({ status: 'active' });
-        const closed_jobs = await Job.countDocuments({ status: 'closed' });
-        const pending_applications = await Application.countDocuments({ status: 'pending' });
-
-        const job_dashboard_data = {
-            total_jobs,
-            active_jobs,
-            closed_jobs,
-            pending_applications,
-        };
-
-        send_response(res, 200, 'Job portal dashboard data', job_dashboard_data);
-    } catch (err) {
-        send_response(res, 500, 'Server error', err.message);
-    }
-}
+// Export the controller functions
+module.exports = {
+    register_admin,
+    login_admin,
+    forgot_password,
+    reset_password,
+    approve_recruiter,
+    reject_recruiter,
+    delete_user
+};

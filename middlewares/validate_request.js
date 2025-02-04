@@ -1,7 +1,8 @@
-import { validationResult } from 'express-validator';
-import { send_response } from '../helpers/response_helper.js';
+const { validationResult } = require('express-validator');
+const send_response = require('../helpers/response_helper.js'); // Assuming this is your response helper function
 
-export function validate_request(validations) {
+// Validate Request Middleware
+function validate_request(validations) {
     return async (req, res, next) => {
         try {
             // Execute all validation rules
@@ -10,13 +11,22 @@ export function validate_request(validations) {
             // Check for validation errors
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return send_response(res, 400, 'Validation error', errors.array());
+                req.statusCode = 400;
+                req.message = 'Validation error';
+                req.data = errors.array();
+                return next(); // Pass to the next middleware (response handler)
             }
 
             // Proceed to the next middleware if validation passes
             next();
         } catch (err) {
-            return send_response(res, 500, 'Validation middleware error', err.message);
+            req.statusCode = 500;
+            req.message = 'Validation middleware error';
+            req.data = err.message;
+            return next(); // Pass to the next middleware (response handler)
         }
     };
 }
+
+// Export the validate_request function
+module.exports = validate_request;

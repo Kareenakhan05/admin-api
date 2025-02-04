@@ -1,7 +1,7 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import connectDB from './database/db.js';
-import admin_routes from './routes/admin_routes.js'; // Admin routes
+const express = require('express');
+const dotenv = require('dotenv');
+const connectDB = require('./database/db.js');
+const admin_routes = require('./routes/admin_routes.js'); // Use require to import admin_routes
 
 dotenv.config();
 

@@ -1,26 +1,31 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+// Function to generate token
+const generate_token = (user_id) => {
+    // Implementation for generating token
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign({ user_id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+    return token;
+};
 
-// Generate JWT Token
-export function generate_token(user_id) {
-    if (!process.env.JWT_SECRET) {
-        throw new Error("Missing JWT_SECRET in environment variables");
-    }
-    return jwt.sign({ id: user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-}
+// Function to hash password
+const hash_password = async (password) => {
+    const bcrypt = require('bcrypt');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    return hashedPassword;
+};
 
-// Hash Password
-export async function hash_password(password) {
-    if (!password) {
-        throw new Error("Password cannot be empty");
-    }
-    return await bcrypt.hash(password, 10);
-}
+// Function to compare password
+const compare_password = async (password, hashedPassword) => {
+    const bcrypt = require('bcrypt');
+    return await bcrypt.compare(password, hashedPassword);
+};
 
-// Compare Passwords
-export async function compare_password(password, hashed_password) {
-    if (!password || !hashed_password) {
-        throw new Error("Password and hashed password cannot be empty");
-    }
-    return await bcrypt.compare(password, hashed_password);
-}
+
+
+// Exporting functions using module.exports
+module.exports = {
+    generate_token,
+    hash_password,
+    compare_password,
+    send_response,
+};
