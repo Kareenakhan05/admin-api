@@ -1,52 +1,75 @@
-const User = require('../../models/user.js');
-const Job = require('../../models/job.js');
-const Application = require('../../models/application.js');
-const { send_response } = require('../../helpers/responseHelper.js');
+const Job = require('../models/job.js');
+const User = require('../models/user.js');
+const Subscription = require('../models/subscription.js');
+const Company = require('../models/company.js');
+const Visitor = require('../models/visitor.js');
+const { responseHandler } = require('../helpers/response_helpers.js');
 
-// Get Dashboard Stats (User & Recruiter)
-const get_dashboard_stats = async (req, res) => {
+// ✅ 1️⃣ GET /admin/overview → Fetch Dashboard Overview Metrics
+const get_admin_overview = async (req, res) => {
     try {
-        const total_users = await User.countDocuments();
-        const total_recruiters = await User.countDocuments({ role: 'recruiter' });
-        const pending_recruiters = await User.countDocuments({ role: 'recruiter', status: 'pending' });
         const total_jobs = await Job.countDocuments();
+        const total_subscriptions = await Subscription.countDocuments();
+        const registered_candidates = await User.countDocuments({ role: 'candidate' });
+        const total_companies = await Company.countDocuments();
+        
+        // ✅ Fetch Visitors by Platform
+        const visitor_data = await Visitor.aggregate([
+            { 
+                $group: { 
+                    _id: "$platform", 
+                    total_visitors: { $sum: "$count" } 
+                } 
+            }
+        ]);
 
-        const dashboard_data = {
-            total_users,
-            total_recruiters,
-            pending_recruiters,
-            total_jobs,
+        // ✅ Transform visitor data into key-value pairs
+        let total_visitors = {
+            "First Platform": 0,
+            "Second Platform": 0,
+            "Aggregate Store": 0
         };
+        visitor_data.forEach(item => {
+            total_visitors[item._id] = item.total_visitors;
+        });
 
-        send_response(res, 200, 'Admin dashboard data', dashboard_data);
+        const revenue_percentage = 93; // Static for now
+
+        return responseHandler(res, 200, "Admin Overview", {
+            total_jobs,
+            total_subscriptions,
+            registered_candidates,
+            total_companies,
+            revenue_percentage,
+            total_visitors
+        });
     } catch (err) {
-        send_response(res, 500, 'Server error', err.message);
+        return responseHandler(res, 500, "Server Error", { error: err.message });
     }
 };
 
-// Get Job Portal Dashboard Stats
-const get_job_dashboard_stats = async (req, res) => {
+// ✅ 2️⃣ GET /admin/department-distribution → Fetch Recruiter Department Distribution
+const get_department_distribution = async (req, res) => {
     try {
-        const total_jobs = await Job.countDocuments();
-        const active_jobs = await Job.countDocuments({ status: 'active' });
-        const closed_jobs = await Job.countDocuments({ status: 'closed' });
-        const pending_applications = await Application.countDocuments({ status: 'pending' });
+        const department_distribution = await User.aggregate([
+            { $match: { role: 'recruiter' } },
+            { $group: { _id: "$department", count: { $sum: 1 } } }
+        ]);
 
-        const job_dashboard_data = {
-            total_jobs,
-            active_jobs,
-            closed_jobs,
-            pending_applications,
-        };
+        // ✅ Convert to percentage
+        const total_recruiters = department_distribution.reduce((acc, item) => acc + item.count, 0);
+        const department_data = department_distribution.map(item => ({
+            department: item._id,
+            percentage: ((item.count / total_recruiters) * 100).toFixed(2) + "%"
+        }));
 
-        send_response(res, 200, 'Job portal dashboard data', job_dashboard_data);
+        return responseHandler(res, 200, "Department Distribution", { department_data });
     } catch (err) {
-        send_response(res, 500, 'Server error', err.message);
+        return responseHandler(res, 500, "Server Error", { error: err.message });
     }
 };
 
-// Export the controller functions
 module.exports = {
-    get_dashboard_stats,
-    get_job_dashboard_stats
+    get_admin_overview,
+    get_department_distribution
 };
