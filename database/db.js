@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const connect_db = async () => {
     try {
@@ -11,11 +11,11 @@ const connect_db = async () => {
             useUnifiedTopology: true
         });
 
-        console.log("Database connected successfully");
+        console.log("✅ Database connected successfully");
     } catch (error) {
-        console.error("Database connection failed:", error.message);
+        console.error("❌ Database connection failed:", error.message);
         process.exit(1);
     }
 };
 
-export default connect_db;
+module.exports = connect_db;

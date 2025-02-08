@@ -1,6 +1,6 @@
-import { check } from 'express-validator';
+const { check } = require('express-validator');
 
-export const registerAdminValidator = [
+const register_admin_validator = [
     check('email').isEmail().withMessage('Invalid email'),
     check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
     check('name').notEmpty().withMessage('Name is required'),
@@ -8,17 +8,24 @@ export const registerAdminValidator = [
     check('role').notEmpty().withMessage('Role is required')
 ];
 
-export const loginAdminValidator = [
+const login_admin_validator = [
     check('email').isEmail().withMessage('Invalid email'),
     check('password').notEmpty().withMessage('Password is required')
 ];
 
-export const forgotPasswordValidator = [
+const forgot_password_validator = [
     check('email').isEmail().withMessage('Invalid email')
 ];
 
-export const resetPasswordValidator = [
+const reset_password_validator = [
     check('email').isEmail().withMessage('Invalid email'),
     check('otp').isNumeric().withMessage('OTP must be a numeric value'),
     check('new_password').isLength({ min: 6 }).withMessage('New password must be at least 6 characters long')
 ];
+
+module.exports = {
+    register_admin_validator,
+    login_admin_validator,
+    forgot_password_validator,
+    reset_password_validator
+};

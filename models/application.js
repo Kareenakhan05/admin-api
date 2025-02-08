@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 // Define the schema for Job Applications
-const applicationSchema = new mongoose.Schema(
+const application_schema = new mongoose.Schema(
     {
         applicant: {
             type: mongoose.Schema.Types.ObjectId,
@@ -18,14 +18,14 @@ const applicationSchema = new mongoose.Schema(
             enum: ['pending', 'interview', 'hired', 'rejected'],
             default: 'pending',
         },
-        applicationDate: {
+        application_date: {
             type: Date,
             default: Date.now,
         },
         resume: {
             type: String, // Path to the applicant's resume file (if uploaded)
         },
-        coverLetter: {
+        cover_letter: {
             type: String, // Path to the applicant's cover letter file (if uploaded)
         },
         comments: {
@@ -36,6 +36,5 @@ const applicationSchema = new mongoose.Schema(
 );
 
 // Create and export the Application model
-const Application = mongoose.model('Application', applicationSchema);
-
-export default Application;
+const Application = mongoose.model('Application', application_schema);
+module.exports = Application; // ✅ Use CommonJS for compatibility

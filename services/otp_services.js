@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-const { send_response } = require('../helpers/response_helper.js');
+const { send_response } = require('../helpers/response_helpers.js');
 
 dotenv.config();
 

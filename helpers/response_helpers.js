@@ -1,5 +1,3 @@
-
-
 function send_response(req, res, next) {
   const { statusCode, message, data } = req;
 
