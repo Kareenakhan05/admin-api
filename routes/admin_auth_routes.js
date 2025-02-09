@@ -21,8 +21,7 @@ const {
     forgotPasswordValidator, 
     resetPasswordValidator 
 } = require('../validators/admin_auth_validators.js');
-
-// ✅ Corrected Middleware Usage
+// Middleware Usage
 router.post('/register', 
     validate_request(registerAdminValidator), // ✅ Pass validator array to validate_request
     register_admin
