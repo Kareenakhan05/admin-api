@@ -23,9 +23,15 @@ const reset_password_validator = [
     check('new_password').isLength({ min: 6 }).withMessage('New password must be at least 6 characters long')
 ];
 
+const logout_admin_validator = [
+    check('token').notEmpty().withMessage('Token is required')  // Assuming logout requires a token
+];
+
+
 module.exports = {
     register_admin_validator,
     login_admin_validator,
     forgot_password_validator,
-    reset_password_validator
+    reset_password_validator,
+    logout_admin_validator
 };

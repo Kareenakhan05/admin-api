@@ -112,6 +112,16 @@ const reset_password = async (req, res) => {
     }
 };
 
+// Admin Logout (Client-Side Token Removal)
+const logout_admin = async (req, res) => {
+    try {
+        // Since JWTs are stateless, we just instruct the client to remove the token
+        send_response(res, 200, 'Logout successful');
+    } catch (err) {
+        send_response(res, 500, 'Server error', err.message);
+    }
+};
+
 
 
 // Export the controller functions
@@ -119,6 +129,7 @@ module.exports = {
     register_admin,
     login_admin,
     forgot_password,
-    reset_password
+    reset_password,
+    logout_admin
     
 };
